@@ -1,8 +1,8 @@
-# PCM (Plateforme citoyenne de mobilisation)
+# PCM · Hackathon Saint-Roch 2026
 
 [![CI](https://github.com/mahamoud-diabate/PCM-Connect/actions/workflows/ci.yml/badge.svg)](https://github.com/mahamoud-diabate/PCM-Connect/actions/workflows/ci.yml)
 
-Prototype réalisé en 48 h lors du **Hackathon Saint-Roch 2026** (Ville de Québec), en équipe de trois. Le défi : faciliter la création de projets dans le quartier Saint-Roch en mobilisant les résidents, les commerçants et les organismes locaux.
+Plateforme citoyenne de mobilisation, prototype construit en 48 h à l'occasion du **Hackathon Saint-Roch 2026** (Ville de Québec), en équipe de trois. Le défi : faciliter la création de projets dans le quartier Saint-Roch en mobilisant les résidents, les commerçants et les organismes locaux.
 
 Le projet n'a pas gagné, mais le prototype complet (React + Express) fonctionne et se teste avec un jeu de données fictif.
 
