@@ -1,0 +1,14 @@
+node_modules/
+client/dist/
+.DS_Store
+
+# Données de la Ville : entente de confidentialité, ne jamais versionner
+donnees/
+server/data/local/
+server/data/runtime.json
+server/scripts/geocode-cache.json
+
+# Anciens emplacements (avant la réorganisation de data/)
+server/data/partners.json
+server/data/events.json
+server/data/*.demo

@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-and-build:
+    name: Tests du moteur et build client
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extraction du code
+        uses: actions/checkout@v4
+
+      - name: Configuration de Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Installation des dépendances
+        run: |
+          npm install --no-audit --no-fund
+          npm --prefix server install --no-audit --no-fund
+          npm --prefix client install --no-audit --no-fund
+
+      - name: Exécution des tests unitaires (moteur d'appariement)
+        run: npm test
+
+      - name: Compilation de l'interface React (Vite)
+        run: npm run build

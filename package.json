@@ -1,0 +1,18 @@
+{
+  "name": "pcm-plateforme-citoyenne-de-mobilisation",
+  "private": true,
+  "version": "1.0.0",
+  "description": "PCM – Plateforme citoyenne de mobilisation (Hackathon Saint-Roch 2026)",
+  "scripts": {
+    "install:all": "npm install && npm --prefix server install && npm --prefix client install",
+    "dev": "concurrently -n api,web -c blue,magenta \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "dev:demo": "concurrently -n api,web -c blue,magenta \"npm --prefix server run dev:demo\" \"npm --prefix client run dev\"",
+    "build": "npm --prefix client run build",
+    "start": "npm --prefix server start",
+    "start:demo": "npm --prefix server run start:demo",
+    "test": "npm --prefix server test"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

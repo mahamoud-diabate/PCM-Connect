@@ -1,0 +1,9 @@
+[
+  { "id": "ev1", "titre": "Fête des voisins d'automne", "date": "2026-10-24", "lieu": "Parvis de l'église Saint-Roch", "lat": 46.8127, "lng": -71.224, "description": "Fête de quartier, rassemblement, animation familiale" },
+  { "id": "ev7", "titre": "Atelier numérique intergénérationnel", "date": "2026-11-07", "lieu": "Bibliothèque Gabrielle-Roy", "lat": 46.8121, "lng": -71.2233, "description": "Numérique, technologie, aînés et jeunes" },
+  { "id": "ev2", "titre": "Marché de Noël de Saint-Roch", "date": "2026-11-28", "lieu": "Jardin Jean-Paul-L'Allier", "lat": 46.8133, "lng": -71.2207, "description": "Marché, achat local, commerçants, artisans, fête" },
+  { "id": "ev3", "titre": "Corvée de nettoyage du printemps", "date": "2027-04-24", "lieu": "Parc des Pékans", "lat": 46.8139, "lng": -71.2236, "description": "Propreté, nettoyage, embellissement, bénévolat" },
+  { "id": "ev4", "titre": "Journée de plantation collective", "date": "2027-05-15", "lieu": "Jardin Jean-Paul-L'Allier", "lat": 46.8133, "lng": -71.2207, "description": "Planter des arbres, verdissement, environnement" },
+  { "id": "ev5", "titre": "Cinéma en plein air", "date": "2027-06-12", "lieu": "Parc des Pékans", "lat": 46.8139, "lng": -71.2236, "description": "Culture, cinéma, famille, animation" },
+  { "id": "ev6", "titre": "Festival de danse de rue", "date": "2027-07-10", "lieu": "Rue Saint-Joseph Est", "lat": 46.8124, "lng": -71.2235, "description": "Danse, spectacle, festival, culture" }
+]

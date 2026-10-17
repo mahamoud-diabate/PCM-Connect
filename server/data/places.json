@@ -1,0 +1,12 @@
+[
+  { "id": "p1", "nom": "Jardin Jean-Paul-L'Allier", "type": "parc", "details": "Parc central du quartier", "lat": 46.8133, "lng": -71.2207 },
+  { "id": "p2", "nom": "Parvis de l'église Saint-Roch", "type": "place", "details": "Espace central à rendre plus convivial (Plan d'action, axe 1, action 11)", "lat": 46.8127, "lng": -71.224 },
+  { "id": "p3", "nom": "Parc des Pékans", "type": "parc", "details": "Ancien stationnement transformé en parc par la mobilisation citoyenne (2025)", "lat": 46.8139, "lng": -71.2236 },
+  { "id": "p4", "nom": "Bibliothèque Gabrielle-Roy", "type": "installation", "details": "Salles disponibles pour activités communautaires", "lat": 46.8121, "lng": -71.2233 },
+  { "id": "p5", "nom": "Îlot de chaleur – stationnement rue du Roi (exemple)", "type": "ilot_chaleur", "details": "Surface minéralisée, intensité de chaleur élevée", "intensite": 4, "lat": 46.8116, "lng": -71.2262 },
+  { "id": "p6", "nom": "Îlot de chaleur – cour arrière boul. Charest (exemple)", "type": "ilot_chaleur", "details": "Intensité de chaleur très élevée", "intensite": 5, "lat": 46.8106, "lng": -71.2245 },
+  { "id": "p7", "nom": "Îlot de chaleur – ruelle rue de la Couronne (exemple)", "type": "ilot_chaleur", "details": "Ruelle asphaltée, candidate ruelle verte", "intensite": 4, "lat": 46.8144, "lng": -71.2252 },
+  { "id": "p8", "nom": "Local vacant – rue Saint-Joseph Est (exemple)", "type": "vitrine_vide", "details": "Rez-de-chaussée commercial disponible", "lat": 46.8124, "lng": -71.2224 },
+  { "id": "p9", "nom": "Local vacant – rue Saint-Joseph Est, ouest (exemple)", "type": "vitrine_vide", "details": "Vitrine vide depuis plusieurs mois", "lat": 46.8126, "lng": -71.2263 },
+  { "id": "p10", "nom": "Parc Victoria", "type": "parc", "details": "Grand parc en réaménagement (Plan d'action, axe 1, action 13)", "lat": 46.8178, "lng": -71.2318 }
+]

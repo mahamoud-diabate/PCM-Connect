@@ -1,0 +1,23 @@
+{
+  "name": "pcm-server",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "dev:demo": "node --watch src/index.js --demo",
+    "start": "node src/index.js",
+    "start:demo": "node src/index.js --demo",
+    "test": "node --test test/moteur.test.js",
+    "inspecter": "node scripts/inspecter.js",
+    "import": "node scripts/import-xlsx.js",
+    "reinitialiser": "node scripts/reinitialiser.js",
+    "geocode": "node scripts/geocode.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.1",
+    "pcm-plateforme-citoyenne-de-mobilisation": "file:..",
+    "xlsx": "^0.18.5"
+  }
+}

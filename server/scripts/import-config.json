@@ -1,0 +1,69 @@
+{
+  "_lisezmoi": "Configuration adaptée aux fichiers de la Ville (colonnes vérifiées le 16 octobre). Lancez : npm run import (dans le dossier server).",
+  "partenaires": [
+    {
+      "source": "organismes_reconnus",
+      "type": "organisme",
+      "fichier": "../../donnees/CP-LSVC-Liste organismes reconnus LSVC-k.xlsx",
+      "colonnes": {
+        "nom": "Nom",
+        "domaine": "Domaine d'intervention",
+        "categorie": "Catégorie",
+        "statut": "Statut",
+        "arrondissement": "Territoire(s)"
+      }
+    },
+    {
+      "source": "organismes_culture",
+      "type": "organisme",
+      "fichier": "../../donnees/CP-LSVC-Liste organismes-k.xlsx",
+      "colonnes": {
+        "nom": "Organisme",
+        "statut": "Statut de l'organisme",
+        "categorie": "Catégorie",
+        "domaine": "Discipline",
+        "typeSoutien": "Type de soutien",
+        "arrondissement": "Arrondissement"
+      }
+    },
+    {
+      "source": "entreprises",
+      "type": "entreprise",
+      "fichier": "../../donnees/DEGP - Entreprises St-Roch-Rev.xlsx",
+      "colonnes": {
+        "nom": "Marque de Commerce",
+        "typeRue": "Type rue",
+        "nomRue": "Nom rue"
+      }
+    },
+    {
+      "source": "sdc",
+      "type": "commerce",
+      "fichier": "../../donnees/DEGP - Membres - SDC Centre-Ville-Rev.xlsx",
+      "colonnes": {
+        "nom": "Marque de Commerce",
+        "domaine": "Activité commerciale",
+        "categorie": "Activité commerciale",
+        "obnl": "OBNL",
+        "typeRue": "Type rue",
+        "nomRue": "Nom rue"
+      }
+    }
+  ],
+  "evenements": {
+    "fichier": "../../donnees/CP-LSVC-Événements à venir-k.xlsx",
+    "colonnes": {
+      "titre": "Titre PROJET",
+      "description": "Description (courte)",
+      "descriptionLongue": "Description promotionnelle",
+      "categorie": "Catégorie",
+      "typeActivite": "Type d'activité",
+      "lieu": "Site(s) de l'activité",
+      "quartier": "Quartier",
+      "arrondissement": "Arrondissement",
+      "date": "Date et heure de début",
+      "promoteur": "Promoteur"
+    },
+    "garderSeulementQuartier": "roch"
+  }
+}
