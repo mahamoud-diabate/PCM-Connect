@@ -1,15 +1,87 @@
 # PCM — Plateforme citoyenne de mobilisation
 
-> De l'idée au projet de quartier, en trois minutes.
-> Hackathon Saint-Roch 2026 · React + Vite (interface) · Node.js + Express (API)
+[![CI](https://github.com/mahamoud-diabate/PCM-Connect/actions/workflows/ci.yml/badge.svg)](https://github.com/mahamoud-diabate/PCM-Connect/actions/workflows/ci.yml)
+![Node.js](https://img.shields.io/badge/Node.js-18%2B%20%2F%2022-339933?logo=node.js&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-5-646CFF?logo=vite&logoColor=white)
+![Leaflet](https://img.shields.io/badge/Leaflet-CARTO%20%2F%20OSM-199900?logo=leaflet&logoColor=white)
+![License](https://img.shields.io/badge/Licence-MIT-blue.svg)
 
-Un citoyen, un commerçant ou un organisme décrit son idée. PCM lui propose :
+> **De l'idée au projet de quartier, en trois minutes.**
+> Prototype complet (React + Vite · Node.js + Express) réalisé en 48 heures lors du **Hackathon Saint-Roch 2026** (Ville de Québec) pour répondre au défi : *« Comment faciliter la création de projets dans Saint-Roch en mobilisant les parties prenantes ? »*
+>
+> **Contexte hackathon :** projet présenté au jury (non primé), publié ici comme pièce de portfolio technique avec son jeu de démonstration synthétique, ses 7 tests automatisés, ses captures d'écran bureau/mobile et un [retour d'expérience détaillé sur l'architecture et les limites du prototype](docs/HACKATHON.md).
 
-- **QUI** : des organismes, commerces et entreprises pertinents, avec la raison de chaque suggestion ;
-- **OÙ** : des lieux pour agir (îlots de chaleur, parcs, locaux vacants) ;
-- **QUAND** : des événements à venir pour lancer le projet.
+---
 
-Le porteur invite ensuite ses partenaires et le projet obtient sa page. Chaque projet publie aussi ses **coups de main** : citoyens, commerces, entreprises et organismes cochent les tâches qu'ils peuvent prendre et laissent leur nom, sans compte ; une **barre de progression** dit où en est l'équipe avant le jour J. Les partenaires publient aussi leurs **offres** (un local, du matériel, des bénévoles). Un **tableau de bord** pour la Ville et la SDC montre les projets, les partenariats créés et les besoins sans réponse.
+## Aperçu en direct (parcours complet)
+
+![Démonstration animée de PCM — du dépôt d'une idée citoyenne à la mobilisation des partenaires et au tableau de bord Pouls](docs/demo-parcours.gif)
+
+- **Vidéo haute définition (MP4, 60 s, 1280×720)** : [`docs/demo-parcours.mp4`](docs/demo-parcours.mp4)
+- **Support de présentation au jury (PDF, 14 diapositives)** : [`docs/presentation/PCM-presentation-jury.pdf`](docs/presentation/PCM-presentation-jury.pdf)
+- **Retour d'expérience & post-mortem technique** : [`docs/HACKATHON.md`](docs/HACKATHON.md)
+- **Plan d'action & FAQ du jury** : [`PLAN-ACTION.md`](PLAN-ACTION.md)
+
+---
+
+## Le problème et la réponse apportée par PCM
+
+Dans le quartier Saint-Roch à Québec, une idée citoyenne ou commerciale meurt souvent faute de savoir à qui parler. Le **311** permet de signaler un irritant municipal, mais il ne connecte ni les voisins, ni les commerçants, ni les organismes communautaires.
+
+Lorsqu'un citoyen, un commerçant ou un organisme décrit son idée en quelques mots, **PCM** croise les données du quartier et lui propose immédiatement :
+
+- **QUI** : les organismes, commerces et entreprises pertinents, avec **l'explication claire de chaque suggestion** (domaine d'action, ressources pouvant être offertes, distance à pied, appartenance à la SDC) ;
+- **OÙ** : des lieux concrets où agir sur la carte du quartier (îlots de chaleur, parcs, placettes, locaux vacants) ;
+- **QUAND** : des événements à venir dans Saint-Roch auxquels greffer le lancement du projet.
+
+Une fois les partenaires invités, le projet dispose de sa propre page collaborative :
+- **Messages d'invitation personnalisés** rédigés automatiquement pour chaque partenaire et suivi des réponses (*Invité* → *Accepte* avec attribution du badge **Bâtisseur de quartier**) ;
+- **Coups de main** : liste de tâches concrètes où citoyens, commerçants et organismes s'inscrivent sans créer de compte, faisant progresser la jauge de préparation avant le jour J ;
+- **Offres partenaires** : catalogue des ressources mises à disposition (local, matériel, bénévoles), reliées automatiquement aux projets qui en expriment le besoin ;
+- **Pouls du quartier** : tableau de bord destiné à la Ville de Québec et à la SDC Saint-Roch pour visualiser les maillages créés, les besoins non couverts et la contribution au *Plan d'action 2026-2029*.
+
+---
+
+## Galerie des écrans (Bureau & Mobile)
+
+### Interface Bureau (`1440×900`)
+
+| 1. Accueil & projets actifs | 2. Dépôt d'une idée (`/idee`) | 3. Constellation — Onglet *Qui* |
+| :---: | :---: | :---: |
+| ![Accueil](docs/captures/desktop/bureau-1-accueil.png) | ![Dépôt d'idée](docs/captures/desktop/bureau-2-idee.png) | ![Constellation Qui](docs/captures/desktop/bureau-3-constellation-qui.png) |
+| **4. Constellation — Onglet *Où* (Carte)** | **5. Page Projet & invitations** | **6. Partenaire accepté & message auto** |
+| ![Constellation Où](docs/captures/desktop/bureau-4-constellation-ou.png) | ![Page Projet](docs/captures/desktop/bureau-5-projet.png) | ![Projet accepté](docs/captures/desktop/bureau-6-projet-accepte.png) |
+| **7. Coups de main & progression** | **8. Offres des partenaires (`/offres`)** | **9. Pouls du quartier (`/pouls`)** |
+| ![Coups de main](docs/captures/desktop/bureau-9-coups-de-main.png) | ![Offres](docs/captures/desktop/bureau-7-offres.png) | ![Pouls du quartier](docs/captures/desktop/bureau-8-pouls.png) |
+
+### Interface Mobile (`390×844`)
+
+| Accueil | Dépôt d'idée | Constellation (*Qui*) | Carte (*Où*) |
+| :---: | :---: | :---: | :---: |
+| ![Mobile Accueil](docs/captures/mobile/mobile-1-accueil.png) | ![Mobile Idée](docs/captures/mobile/mobile-2-idee.png) | ![Mobile Qui](docs/captures/mobile/mobile-3-constellation-qui.png) | ![Mobile Où](docs/captures/mobile/mobile-4-constellation-ou.png) |
+| **Page Projet** | **Partenaire confirmé** | **Offres** | **Pouls du quartier** |
+| ![Mobile Projet](docs/captures/mobile/mobile-5-projet.png) | ![Mobile Accepté](docs/captures/mobile/mobile-6-projet-accepte.png) | ![Mobile Offres](docs/captures/mobile/mobile-7-offres.png) | ![Mobile Pouls](docs/captures/mobile/mobile-8-pouls.png) |
+
+---
+
+## État des fonctionnalités (Périmètre Hackathon vs Production)
+
+Pour distinguer clairement ce qui est fonctionnel et testé dans ce dépôt de ce qui relève d'une mise en production municipale :
+
+| Fonctionnalité | Statut | Détails techniques |
+| --- | :---: | --- |
+| **Moteur de suggestion tripartite (*Qui / Où / Quand*)** | ✅ Implémenté | `server/src/matching.js` — score pondéré explicable + raisons détaillées en français |
+| **Recherche hybride : Lexique + TF-IDF local** | ✅ Implémenté | `server/src/themes.js` & `texte.js` — trouve des partenaires même sans mot-clé exact |
+| **IA sémantique locale optionnelle (Embeddings)** | ✅ Implémenté | `server/src/embeddings.js` — modèle multilingue `paraphrase-multilingual-MiniLM-L12-v2` exécuté 100 % hors-ligne |
+| **Carte interactive de Saint-Roch** | ✅ Implémenté | `client/src/components/MapView.jsx` — Leaflet + tuiles CARTO (OpenStreetMap) |
+| **Espace Projet, invitations et *Coups de main*** | ✅ Implémenté | Suivi des réponses, badge *Bâtisseur de quartier*, inscription aux tâches et barre de progression |
+| **Place des offres & rapprochement automatique** | ✅ Implémenté | Associe automatiquement les offres publiées aux projets ayant les mêmes besoins |
+| **Tableau de bord *Pouls du quartier* (Ville / SDC)** | ✅ Implémenté | Indicateurs d'activité, besoins non comblés et alignement avec le Plan d'action 2026-2029 |
+| **Pipeline d'importation des classeurs Excel de la Ville** | ✅ Implémenté | `server/scripts/import-xlsx.js` — normalise 1 696 acteurs et 41 événements localement |
+| **Envoi réel des invitations (courriel / SMS)** | ⚠️ Partiel (prototype) | Le message personnalisé est généré et prêt à copier, mais l'acceptation est simulée dans l'interface |
+| **Comptes utilisateurs & authentification** | 🔭 Hors périmètre 48 h | Aucune authentification dans le prototype afin de permettre un test immédiat devant le jury |
+| **Base de données transactionnelle multi-instances** | 🔭 Hors périmètre 48 h | Stockage en mémoire et JSON local (`store.js`), conçu pour être remplacé par SQLite ou PostgreSQL/PostGIS |
 
 ---
 
@@ -18,7 +90,8 @@ Le porteur invite ensuite ses partenaires et le projet obtient sa page. Chaque p
 Prérequis : **Node.js 18 ou plus récent** (`node -v`).
 
 ```bash
-cd pcm
+git clone https://github.com/mahamoud-diabate/PCM-Connect.git
+cd PCM-Connect
 npm run install:all     # installe la racine, le serveur et le client
 npm run dev:demo        # lance l'API (port 3001) et l'interface (port 5173) avec les données FICTIVES
 ```
@@ -95,7 +168,7 @@ Cette option charge le modèle multilingue `paraphrase-multilingual-MiniLM-L12-v
 ## 5. Structure
 
 ```
-pcm/
+PCM-Connect/
 ├── client/                        React + Vite (installable sur mobile)
 │   └── src/
 │       ├── pages/                 Accueil, Idee, Constellation, Projet, Offres, Pouls
@@ -161,6 +234,10 @@ pcm/
 - Un module **Vitrines vivantes** : les locaux vacants deviennent des offres, au service des actions 5 et 10 de l'axe 3.
 - L'intégration au futur quartier universitaire de l'UQ (projets étudiants).
 - L'extension aux 9 artères commerciales des SDC de Québec.
+
+## 9. Licence
+
+Distribué sous licence [MIT](LICENSE).
 
 ---
 *Les données de démonstration sont fictives. Les noms d'organismes et de commerces sont inventés. Ce prototype a été codé avec une forte assistance IA : c'est assumé, et ce README distingue ce qui est vérifié de ce qui ne l'est pas.*

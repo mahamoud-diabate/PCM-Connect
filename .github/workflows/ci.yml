@@ -22,8 +22,8 @@ jobs:
       - name: Installation des dépendances
         run: |
           npm install --no-audit --no-fund
-          npm --prefix server install --no-audit --no-fund
-          npm --prefix client install --no-audit --no-fund
+          cd server && npm install --no-audit --no-fund && cd ..
+          cd client && npm install --no-audit --no-fund && cd ..
 
       - name: Exécution des tests unitaires (moteur d'appariement)
         run: npm test

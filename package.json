@@ -1,10 +1,15 @@
 {
-  "name": "pcm-plateforme-citoyenne-de-mobilisation",
+  "name": "pcm-connect",
   "private": true,
   "version": "1.0.0",
-  "description": "PCM – Plateforme citoyenne de mobilisation (Hackathon Saint-Roch 2026)",
+  "description": "PCM – Plateforme citoyenne de mobilisation (Hackathon Saint-Roch 2026, Ville de Québec)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mahamoud-diabate/PCM-Connect.git"
+  },
   "scripts": {
-    "install:all": "npm install && npm --prefix server install && npm --prefix client install",
+    "install:all": "npm install && (cd server && npm install) && (cd client && npm install)",
     "dev": "concurrently -n api,web -c blue,magenta \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
     "dev:demo": "concurrently -n api,web -c blue,magenta \"npm --prefix server run dev:demo\" \"npm --prefix client run dev\"",
     "build": "npm --prefix client run build",

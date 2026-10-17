@@ -1,256 +1,191 @@
-// Enregistreur CDP sans dépendance pour PCM (Plateforme citoyenne de mobilisation)
-// Usage :
-//   node docs/record.mjs screens http://localhost:3001 docs/captures
-//   node docs/record.mjs video   http://localhost:3001 docs
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
-import { spawn } from 'node:child_process';
-import { mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+// Enregistre une démonstration vidéo d'une minute de l'application, via le screencast CDP.
+// Usage : node record-demo.mjs <url_base> <dossier_frames>
+import fs from 'node:fs';
+import path from 'node:path';
 
-const CHROME = [
-  'C:/Program Files/Google/Chrome/Application/chrome.exe',
-  'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
-  (process.env.LOCALAPPDATA || '') + '/Google/Chrome/Application/chrome.exe',
-].find((p) => existsSync(p));
+const PORT = Number(process.env.CDP_PORT || 9444);
+const BASE = process.argv[2] || 'http://localhost:3011';
+const DOSSIER = process.argv[3] || './demo-frames';
+const LARGEUR = 1600, HAUTEUR = 900;
 
-if (!CHROME) throw new Error('Google Chrome introuvable');
+fs.rmSync(DOSSIER, { recursive: true, force: true });
+fs.mkdirSync(DOSSIER, { recursive: true });
 
-const mode = process.argv[2] || 'screens';
-const baseUrl = (process.argv[3] || 'http://localhost:3001').replace(/\/$/, '');
-const outDir = process.argv[4] || 'docs/captures';
-const port = 9345 + Math.floor(Math.random() * 200);
-const profile = mkdtempSync(join(tmpdir(), 'pcm-cdp-'));
+const cibles = await (await fetch(`http://127.0.0.1:${PORT}/json`)).json();
+const page = cibles.find((c) => c.type === 'page');
+const ws = new WebSocket(page.webSocketDebuggerUrl);
+await new Promise((r) => ws.addEventListener('open', r));
 
-mkdirSync(outDir, { recursive: true });
+let id = 0;
+const attente = new Map();
+const erreurs = [];
+const frames = [];
+let numero = 0;
 
-const chrome = spawn(CHROME, [
-  '--headless=new',
-  `--remote-debugging-port=${port}`,
-  `--user-data-dir=${profile}`,
-  '--no-first-run',
-  '--no-default-browser-check',
-  '--disable-extensions',
-  '--hide-scrollbars',
-  '--force-device-scale-factor=1',
-  '--window-size=1440,900',
-  'about:blank',
-], { stdio: 'ignore' });
-
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-async function getWs() {
-  for (let i = 0; i < 60; i++) {
-    try {
-      const r = await fetch(`http://127.0.0.1:${port}/json/list`);
-      const list = await r.json();
-      const page = list.find((t) => t.type === 'page');
-      if (page?.webSocketDebuggerUrl) return page.webSocketDebuggerUrl;
-    } catch {}
-    await sleep(250);
+ws.addEventListener('message', (m) => {
+  const d = JSON.parse(m.data);
+  if (d.id && attente.has(d.id)) { attente.get(d.id)(d); attente.delete(d.id); }
+  if (d.method === 'Page.screencastFrame') {
+    const f = path.join(DOSSIER, `f${String(numero++).padStart(5, '0')}.jpg`);
+    fs.writeFileSync(f, Buffer.from(d.params.data, 'base64'));
+    frames.push({ fichier: path.basename(f), t: Date.now() });
+    cdp('Page.screencastFrameAck', { sessionId: d.params.sessionId });
   }
-  throw new Error('Impossible de joindre Chrome CDP');
-}
-
-const ws = new WebSocket(await getWs());
-await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
-
-let seq = 0;
-const pending = new Map();
-const listeners = new Map();
-
-ws.onmessage = (ev) => {
-  const msg = JSON.parse(ev.data);
-  if (msg.id && pending.has(msg.id)) {
-    const { resolve, reject } = pending.get(msg.id);
-    pending.delete(msg.id);
-    msg.error ? reject(new Error(JSON.stringify(msg.error))) : resolve(msg.result);
-  } else if (msg.method && listeners.has(msg.method)) {
-    for (const fn of listeners.get(msg.method)) fn(msg.params);
-  }
-};
-
-const send = (method, params = {}) => new Promise((resolve, reject) => {
-  const id = ++seq;
-  pending.set(id, { resolve, reject });
-  ws.send(JSON.stringify({ id, method, params }));
+  if (d.method === 'Runtime.exceptionThrown') erreurs.push(d.params.exceptionDetails.exception?.description?.split('\n')[0] || d.params.exceptionDetails.text);
 });
 
-const on = (event, fn) => {
-  if (!listeners.has(event)) listeners.set(event, []);
-  listeners.get(event).push(fn);
-};
+function cdp(method, params = {}) {
+  return new Promise((r) => { const n = ++id; attente.set(n, r); ws.send(JSON.stringify({ id: n, method, params })); });
+}
+const ev = async (e) => (await cdp('Runtime.evaluate', { expression: e, awaitPromise: true, returnByValue: true })).result?.result?.value;
+const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const evaluate = async (expression) => {
-  const r = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
-  return r.result?.value;
-};
+await cdp('Page.enable');
+await cdp('Runtime.enable');
+await cdp('Emulation.setDeviceMetricsOverride', { width: LARGEUR, height: HAUTEUR, deviceScaleFactor: 1, mobile: false });
 
-await send('Page.enable');
-await send('Runtime.enable');
-await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+// Curseur factice : un navigateur sans interface ne dessine pas le pointeur.
+const CURSEUR = `(() => {
+  if (document.getElementById('__curseur')) return;
+  const c = document.createElement('div');
+  c.id = '__curseur';
+  c.style.cssText = 'position:fixed;z-index:99999;width:22px;height:22px;margin:-11px 0 0 -11px;pointer-events:none;transition:left .25s ease, top .25s ease;left:50%;top:50%';
+  c.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22"><path d="M6 2 L6 20 L10.5 15.5 L13.5 21.5 L16 20.2 L13 14.4 L19 14 Z" fill="#16181d" stroke="#fff" stroke-width="1.4"/></svg>';
+  document.body.appendChild(c);
+})()`;
 
-// Curseur visuel pour la vidéo
-const injectCursor = async () => {
-  await evaluate(`(() => {
-    if (document.getElementById('pcm-demo-cursor')) return;
-    const c = document.createElement('div');
-    c.id = 'pcm-demo-cursor';
-    Object.assign(c.style, {
-      position: 'fixed', left: '720px', top: '450px', width: '22px', height: '22px',
-      borderRadius: '50%', background: 'rgba(13, 106, 94, 0.35)',
-      border: '2.5px solid #0d6a5e', boxShadow: '0 2px 10px rgba(0,0,0,0.28)',
-      pointerEvents: 'none', zIndex: '999999', transform: 'translate(-50%, -50%)',
-      transition: 'left 0.38s cubic-bezier(0.22,1,0.36,1), top 0.38s cubic-bezier(0.22,1,0.36,1), transform 0.15s ease'
-    });
-    document.body.appendChild(c);
-  })()`);
-};
-
-const moveCursorAndClick = async (selectorOrText, byText = false) => {
-  const rect = await evaluate(`(() => {
-    const norm = (s) => (s || '').replace(/\s+/g, ' ').trim().toLowerCase();
-    let el = null;
-    if (${JSON.stringify(byText)}) {
-      const target = norm(${JSON.stringify(selectorOrText)});
-      const all = Array.from(document.querySelectorAll('button, a, label, [role=button], .card, h3, h4'));
-      el = all.find((e) => norm(e.innerText).includes(target));
-    } else {
-      el = document.querySelector(${JSON.stringify(selectorOrText)});
-    }
+const bouger = (x, y) => ev(`(() => { const c = document.getElementById('__curseur'); c.style.left='${x}px'; c.style.top='${y}px'; return [c.style.left, c.style.top]; })()`);
+async function cliquer(cible, texte, marge = 0) {
+  const boite = await ev(`(() => {
+    const el = [...document.querySelectorAll(${JSON.stringify(cible)})].find((e) => e.textContent.includes(${JSON.stringify(texte)}));
     if (!el) return null;
-    el.scrollIntoView({ behavior: 'instant', block: 'center' });
+    el.scrollIntoView({ block: 'center' });
     const r = el.getBoundingClientRect();
-    const c = document.getElementById('pcm-demo-cursor');
-    const x = Math.round(r.left + Math.min(r.width / 2, 120));
-    const y = Math.round(r.top + r.height / 2);
-    if (c) { c.style.left = x + 'px'; c.style.top = y + 'px'; }
-    return { x, y };
+    return { x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2) };
   })()`);
-  await sleep(420);
-  if (rect) {
-    await evaluate(`(() => {
-      const c = document.getElementById('pcm-demo-cursor');
-      if (c) c.style.transform = 'translate(-50%, -50%) scale(0.72)';
-      setTimeout(() => { if (c) c.style.transform = 'translate(-50%, -50%) scale(1)'; }, 160);
-    })()`);
-  }
-  await evaluate(`(() => {
-    const norm = (s) => (s || '').replace(/\s+/g, ' ').trim().toLowerCase();
-    let el = null;
-    if (${JSON.stringify(byText)}) {
-      const target = norm(${JSON.stringify(selectorOrText)});
-      const all = Array.from(document.querySelectorAll('button, a, label, [role=button]'));
-      el = all.find((e) => norm(e.innerText).includes(target));
-    } else {
-      el = document.querySelector(${JSON.stringify(selectorOrText)});
-    }
+  if (!boite) { console.log('  cible introuvable :', cible, texte); return false; }
+  await bouger(boite.x, boite.y);
+  await pause(320);
+  await ev(`(() => {
+    const el = [...document.querySelectorAll(${JSON.stringify(cible)})].find((e) => e.textContent.includes(${JSON.stringify(texte)}));
     if (el) el.click();
   })()`);
-  await sleep(550);
-};
-
-const snap = async (filename) => {
-  const { data } = await send('Page.captureScreenshot', { format: 'png' });
-  const full = join(outDir, filename);
-  writeFileSync(full, Buffer.from(data, 'base64'));
-  console.log('Capture :', full);
-};
-
-if (mode === 'screens') {
-  // 1. Accueil
-  await send('Page.navigate', { url: `${baseUrl}/` });
-  await sleep(2200);
-  await snap('01-accueil.png');
-
-  // 2. Déposer une idée (préremplie avec l'exemple Frigo-partage)
-  await send('Page.navigate', { url: `${baseUrl}/idee` });
-  await sleep(1600);
-  await moveCursorAndClick('Frigo-partage', true);
-  await sleep(800);
-  await snap('02-deposer-une-idee.png');
-
-  // 3. Constellation d'alliés (génération depuis l'idée)
-  await moveCursorAndClick('Trouver mes alliés', true);
-  await sleep(2200);
-  await snap('03-constellation-allies.png');
-
-  // 4. Espace projet collaboratif (premier projet existant)
-  await send('Page.navigate', { url: `${baseUrl}/projets/proj-demo-1` });
-  await sleep(2200);
-  await snap('04-espace-projet.png');
-
-  // 5. Place des offres citoyennes et matérielles
-  await send('Page.navigate', { url: `${baseUrl}/offres` });
-  await sleep(1800);
-  await snap('05-offres-entraide.png');
-
-  // 6. Pouls du quartier (tableau de bord)
-  await send('Page.navigate', { url: `${baseUrl}/pouls` });
-  await sleep(2000);
-  await snap('06-pouls-du-quartier.png');
-} else if (mode === 'video') {
-  const framesDir = join(outDir, 'frames');
-  rmSync(framesDir, { recursive: true, force: true });
-  mkdirSync(framesDir, { recursive: true });
-  let frameCount = 0;
-  let recording = true;
-
-  const captureLoop = (async () => {
-    while (recording) {
-      try {
-        const { data } = await send('Page.captureScreenshot', { format: 'jpeg', quality: 88 });
-        const idx = String(++frameCount).padStart(4, '0');
-        writeFileSync(join(framesDir, `frame-${idx}.jpg`), Buffer.from(data, 'base64'));
-      } catch {}
-      await sleep(95);
-    }
-  })();
-
-  await send('Page.navigate', { url: `${baseUrl}/` });
-  await sleep(1600);
-  await injectCursor();
-  await sleep(900);
-
-  // Aller sur Déposer une idée
-  await moveCursorAndClick('a[href="/idee"] enacted, a[href="/idee"]', false);
-  await send('Page.navigate', { url: `${baseUrl}/idee` });
-  await sleep(1100);
-  await injectCursor();
-
-  // Charger l'exemple Frigo-partage
-  await moveCursorAndClick('Frigo-partage', true);
-  await sleep(900);
-
-  // Lancer l'appariement
-  await moveCursorAndClick('Trouver mes alliés', true);
-  await sleep(1800);
-  await injectCursor();
-
-  // Parcourir la constellation et l'explication des scores
-  await evaluate('window.scrollTo({ top: 360, behavior: "smooth" })');
-  await sleep(1400);
-  await evaluate('window.scrollTo({ top: 0, behavior: "smooth" })');
-  await sleep(900);
-
-  // Ouvrir un espace projet actif avec partenaires, tâches et feuille de route
-  await send('Page.navigate', { url: `${baseUrl}/projets/proj-demo-1` });
-  await sleep(1600);
-  await injectCursor();
-  await evaluate('window.scrollTo({ top: 380, behavior: "smooth" })');
-  await sleep(1400);
-
-  if (process.env.PCM_STOP !== 'short') {
-    await send('Page.navigate', { url: `${baseUrl}/offres` });
-    await sleep(1400);
-    await send('Page.navigate', { url: `${baseUrl}/pouls` });
-    await sleep(1800);
-  }
-
-  recording = false;
-  await captureLoop;
-  console.log('Frames capturées :', frameCount);
+  return true;
 }
+async function saisir(selecteur, texte) {
+  const boite = await ev(`(() => { const el = document.querySelector(${JSON.stringify(selecteur)}); if (!el) return null; el.scrollIntoView({ block: 'center' }); const r = el.getBoundingClientRect(); return { x: Math.round(r.left + 40), y: Math.round(r.top + r.height / 2) }; })()`);
+  if (boite) await bouger(boite.x, boite.y);
+  await ev(`(() => {
+    const el = document.querySelector(${JSON.stringify(selecteur)});
+    const s = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    s.call(el, ${JSON.stringify(texte)});
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  })()`);
+  await pause(300);
+}
+const defiler = async (y, ms = 900) => { await ev(`window.scrollTo({ top: ${y}, behavior: 'smooth' })`); await pause(ms); };
 
+// ---------- Le parcours, minuté sur ~60 secondes ----------
+await cdp('Page.startScreencast', { format: 'jpeg', quality: 82, maxWidth: LARGEUR, maxHeight: HAUTEUR, everyNthFrame: 1 });
+await pause(400);
+console.log('1. accueil');
+await cdp('Page.navigate', { url: BASE + '/' });
+await pause(2600);
+await ev(CURSEUR);
+await pause(1200);
+
+console.log('2. mon idée');
+await cliquer('a.bouton', "Lancer mon idée");
+await pause(1800);
+await ev(CURSEUR);
+await cliquer('button.chip', 'Verdir notre ruelle');
+await pause(1200);
+await saisir('input[placeholder="Ex. : Marie"]', 'Marie');
+await pause(700);
+await cliquer('button.bouton-principal', 'Trouver mes partenaires');
+await pause(2600);
+
+console.log('3. constellation');
+await ev(CURSEUR);
+await bouger(420, 300);
+await pause(1400);
+await defiler(520);
+await pause(1600);
+await cliquer('button[role="tab"]', 'Où');
+await pause(2200);
+await cliquer('button[role="tab"]', 'Quand');
+await pause(2200);
+await cliquer('button[role="tab"]', 'Qui');
+await pause(900);
+await cliquer('button.bouton-principal', 'Inviter');
+await pause(2800);
+
+console.log('4. page du projet');
+await ev(CURSEUR);
+await cliquer('button.bouton-petit', 'Accepte');
+await pause(2000);
+await cliquer('button.lien', "Voir le message d'invitation");
+await pause(2400);
+await cliquer('button.lien', 'Masquer le message');
+await pause(600);
+
+console.log('5. coups de main');
+await cdp('Page.navigate', { url: BASE + '/' });
+await pause(2200);
+await ev(CURSEUR);
+await ev(`(() => { const a = [...document.querySelectorAll('a.carte-lien')].find((x) => x.textContent.includes('ruelle de la Couronne')); if (a) a.click(); })()`);
+await pause(2600);
+await ev(CURSEUR);
+await ev(`document.querySelector('.coups')?.scrollIntoView({ block: 'start' })`);
+await pause(1600);
+const libres = await ev(`(() => {
+  const t = [...document.querySelectorAll('.tache:not(.tache-pourvue)')];
+  t.slice(0, 2).forEach((x, i) => setTimeout(() => { const c = x.querySelector('input'); if (c && !c.checked) c.click(); }, i * 600));
+  return t.length;
+})()`);
+await pause(2200);
+console.log('   tâches libres :', libres);
+await saisir('.form-contribution input', 'Famille du 3e rang');
+await pause(800);
+console.log('   bouton :', await ev(`document.querySelector('.form-contribution button')?.textContent || '(absent)'`));
+await cliquer('.form-contribution button', "J'apporte");
+await pause(2600);
+console.log('   barre :', await ev(`document.querySelector('.progression-taches')?.textContent?.slice(0, 80) || '(absente)'`));
+
+console.log('6. offres');
+await cdp('Page.navigate', { url: BASE + '/offres' });
+await pause(2600);
+await ev(CURSEUR);
+await defiler(360);
+await pause(2000);
+
+console.log('7. pouls');
+await cdp('Page.navigate', { url: BASE + '/pouls' });
+await pause(2800);
+await ev(CURSEUR);
+await defiler(300);
+await pause(2000);
+await defiler(0);
+await pause(1200);
+
+console.log('8. retour à l’accueil');
+await cdp('Page.navigate', { url: BASE + '/' });
+await pause(2600);
+
+const fin = Date.now();
+const debut = frames.length ? frames[0].t : fin;
+
+// ---------- Montage : frames + durée de chacune (le screencast n'est pas à cadence fixe) ----------
+const lignes = [];
+let total = 0;
+for (let i = 0; i < frames.length; i++) {
+  const suivant = i + 1 < frames.length ? frames[i + 1].t : fin;
+  const duree = Math.max(0.02, (suivant - frames[i].t) / 1000);
+  total += duree;
+  lignes.push(`file '${frames[i].fichier}'`);
+  lignes.push(`duration ${duree.toFixed(3)}`);
+}
+if (frames.length) lignes.push(`file '${frames[frames.length - 1].fichier}'`);
+fs.writeFileSync(path.join(DOSSIER, 'list.txt'), lignes.join('\n'), 'utf8');
+console.log(`frames : ${frames.length} | duree enregistrée : ${total.toFixed(1)} s | erreurs JS : ${erreurs.length ? erreurs.join(' | ') : 'aucune'}`);
 ws.close();
-chrome.kill();
